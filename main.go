@@ -162,6 +162,9 @@ func main() {
 		gl.DispatchCompute(1024, 1, 1)
 		gl.MemoryBarrier(gl.VERTEX_ATTRIB_ARRAY_BARRIER_BIT)
 
+		gl.GetBufferSubData(gl.SHADER_STORAGE_BUFFER,0, numParticles*16, gl.Ptr(points))
+		fmt.Println(points[0])
+
 		gl.UseProgram(quadProg)
 		gl.ClearColor(0, 0, 0, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
