@@ -8,7 +8,6 @@ import (
 	_ "image/png"
 	"io/ioutil"
 	"log"
-	"math"
 	"math/rand"
 	"runtime"
 	"strings"
@@ -103,16 +102,10 @@ func main() {
 	var points, velocities []mgl32.Vec4
 
 	for i := 0; i < numParticles; i++ {
-		for {
-			x := (rand.Float32()*2 - 1) * float32(32)
-			y := (rand.Float32()*2 - 1) * float32(32)
-			z := (rand.Float32()*2 - 1) * float32(32)
-			if math.Hypot(float64(x), math.Hypot(float64(y), float64(z))) > 32 {
-				continue
-			}
-			points = append(points, mgl32.Vec4{x, y, z, 1})
-			break
-		}
+		x := (rand.Float32()*2 - 1) * float32(32)
+		y := (rand.Float32()*2 - 1) * float32(32)
+		z := (rand.Float32()*2 - 1) * float32(32)
+		points = append(points, mgl32.Vec4{x, y, z, 1})
 	}
 
 	gl.GenBuffers(1, &posSSBO)
@@ -121,16 +114,10 @@ func main() {
 	gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, posSSBO)
 
 	for i := 0; i < numParticles; i++ {
-		for {
-			x := (rand.Float32()*2 - 1) * float32(10.0)
-			y := (rand.Float32()*2 - 1) * float32(10.0)
-			z := (rand.Float32()*2 - 1) * float32(10.0)
-			if math.Hypot(float64(x), math.Hypot(float64(y), float64(z))) > 10 {
-				continue
-			}
-			velocities = append(velocities, mgl32.Vec4{x, y, z, 0})
-			break
-		}
+		x := (rand.Float32()*2 - 1) * float32(10.0)
+		y := (rand.Float32()*2 - 1) * float32(10.0)
+		z := (rand.Float32()*2 - 1) * float32(10.0)
+		velocities = append(velocities, mgl32.Vec4{x, y, z, 0})
 	}
 
 	gl.GenBuffers(1, &velSSBO)
