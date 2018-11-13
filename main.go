@@ -24,7 +24,6 @@ const (
 var (
 	frames            = 0
 	second            = time.Tick(time.Second)
-	frameLength       float64
 	windowTitlePrefix = "Particles"
 	vao               uint32
 )
@@ -166,8 +165,6 @@ func main() {
 
 	for !window.ShouldClose() {
 
-		frameStart := time.Now()
-
 		if window.GetKey(glfw.KeyEscape) == glfw.Press {
 			window.SetShouldClose(true)
 		}
@@ -197,7 +194,6 @@ func main() {
 			frames = 0
 		default:
 		}
-		frameLength = time.Since(frameStart).Seconds()
 
 	}
 

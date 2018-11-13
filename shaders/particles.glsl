@@ -12,7 +12,7 @@ layout (std140, binding = 1) buffer Vel {
 void main() {
   uint index = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
 
-  if(index > NUMPARTICLES) {
+	if(index > NUMPARTICLES) {
     return;
   }
 
@@ -20,10 +20,8 @@ void main() {
 
   vec3 pPos = positions[index].xyz;
   vec3 vPos = velocities[index].xyz;
-  vec3 centre = vec3(0,0,0);
 
-  float l = distance(centre, pPos);
-  vec3 g = (pPos - centre)/pow(l, 2) * -900.0;
+  vec3 g = normalize(pPos) * -9.0; // grav strength
   vec3 pp = pPos + vPos * t + 0.5 * t * t * g;
   vec3 vp = vPos + g * t;
 
