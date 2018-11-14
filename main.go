@@ -18,6 +18,7 @@ const (
 	windowWidth  = 1280
 	windowHeight = 720
 	numParticles = 1000000
+	attractors   = 16
 )
 
 var (
@@ -26,13 +27,11 @@ var (
 	windowTitlePrefix = "Particles"
 	vao               uint32
 	frameLength       float32
-	g                 = float32(-20)
 )
 
 func init() {
-
 	runtime.LockOSThread()
-
+	rand.Seed(time.Now().UTC().UnixNano())
 }
 
 func LoadShader(path string, shaderType uint32) uint32 {
@@ -109,8 +108,8 @@ func main() {
 	var points, velocities []mgl32.Vec4
 
 	for i := 0; i < numParticles; i++ {
-		x := (rand.Float32()*2 - 1) * float32(32)
-		y := (rand.Float32()*2 - 1) * float32(32)
+		x := (rand.Float32()*2 - 1) * float32(100)
+		y := (rand.Float32()*2 - 1) * float32(75)
 		z := float32(0)
 		points = append(points, mgl32.Vec4{x, y, z, 1})
 	}
@@ -121,8 +120,8 @@ func main() {
 	gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, posSSBO)
 
 	for i := 0; i < numParticles; i++ {
-		x := (rand.Float32()*2 - 1) * float32(10.0)
-		y := (rand.Float32()*2 - 1) * float32(10.0)
+		x := float32(0) //(rand.Float32()*2 - 1) * float32(4)
+		y := float32(0) //(rand.Float32()*2 - 1) * float32(4)
 		z := float32(0)
 		velocities = append(velocities, mgl32.Vec4{x, y, z, 0})
 	}
@@ -131,6 +130,18 @@ func main() {
 	gl.BindBuffer(gl.SHADER_STORAGE_BUFFER, velSSBO)
 	gl.BufferData(gl.SHADER_STORAGE_BUFFER, numParticles*16, gl.Ptr(velocities), gl.DYNAMIC_DRAW)
 	gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, velSSBO)
+
+	attractorVectors := make([]float32, 0)
+
+	for i := 0; i < attractors; i++ {
+		attractorVectors = append(attractorVectors, (rand.Float32()*2-1)*float32(100))
+	}
+	for i := 0; i < attractors; i++ {
+		attractorVectors = append(attractorVectors, (rand.Float32()*2-1)*float32(75))
+	}
+	for i := 0; i < attractors; i++ {
+		attractorVectors = append(attractorVectors, -rand.Float32()*float32(20))
+	}
 
 	quadProg := gl.CreateProgram()
 	gl.AttachShader(quadProg, vertexShader)
@@ -165,24 +176,14 @@ func main() {
 			window.SetShouldClose(true)
 		}
 
-		if window.GetKey(glfw.KeyUp) == glfw.Press {
-			g += 10 * frameLength
-		}
-
-		if window.GetKey(glfw.KeyDown) == glfw.Press {
-			g -= 10 * frameLength
-		}
-
-		mouseX, mouseY := window.GetCursorPos()
-		x := float32((mouseX - windowWidth/2) * 0.16)
-		y := float32((windowHeight/2 - mouseY) * 0.16)
-
 		/* --------------------------- */
 
 		gl.UseProgram(particleProg)
 
 		gl.BindBuffer(gl.UNIFORM_BUFFER, particleDataBuffer)
-		particleDataBlock := []float32{frameLength, x, y, g}
+		particleDataBlock := []float32{frameLength}
+		particleDataBlock = append(particleDataBlock, attractorVectors...)
+
 		gl.BufferData(gl.UNIFORM_BUFFER, len(particleDataBlock)*4, gl.Ptr(particleDataBlock), gl.DYNAMIC_COPY)
 		gl.BindBufferBase(gl.UNIFORM_BUFFER, 1, particleDataBuffer)
 
@@ -207,7 +208,7 @@ func main() {
 		frames++
 		select {
 		case <-second:
-			window.SetTitle(fmt.Sprintf("%s | FPS: %d | g: %f", windowTitlePrefix, frames, g))
+			window.SetTitle(fmt.Sprintf("%s | FPS: %d", windowTitlePrefix, frames))
 			frames = 0
 		default:
 		}
