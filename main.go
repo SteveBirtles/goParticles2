@@ -25,6 +25,8 @@ var (
 	second            = time.Tick(time.Second)
 	windowTitlePrefix = "Particles"
 	vao               uint32
+	frameLength       float32
+	g                 = float32(-20)
 )
 
 func init() {
@@ -96,6 +98,11 @@ func main() {
 	gl.LinkProgram(particleProg)
 	gl.UseProgram(particleProg)
 
+	var tBuffer uint32
+	tIndex := gl.GetUniformBlockIndex(particleProg, gl.Str("TimeBlock"+"\x00"))
+	gl.UniformBlockBinding(particleProg, tIndex, 1)
+	gl.GenBuffers(1, &tBuffer)
+
 	posSSBO := uint32(1)
 	velSSBO := uint32(2)
 
@@ -104,7 +111,7 @@ func main() {
 	for i := 0; i < numParticles; i++ {
 		x := (rand.Float32()*2 - 1) * float32(32)
 		y := (rand.Float32()*2 - 1) * float32(32)
-		z := (rand.Float32()*2 - 1) * float32(32)
+		z := float32(0)
 		points = append(points, mgl32.Vec4{x, y, z, 1})
 	}
 
@@ -116,7 +123,7 @@ func main() {
 	for i := 0; i < numParticles; i++ {
 		x := (rand.Float32()*2 - 1) * float32(10.0)
 		y := (rand.Float32()*2 - 1) * float32(10.0)
-		z := (rand.Float32()*2 - 1) * float32(10.0)
+		z := float32(0)
 		velocities = append(velocities, mgl32.Vec4{x, y, z, 0})
 	}
 
@@ -152,18 +159,38 @@ func main() {
 
 	for !window.ShouldClose() {
 
+		frameStart := time.Now()
+
 		if window.GetKey(glfw.KeyEscape) == glfw.Press {
 			window.SetShouldClose(true)
 		}
 
+		if window.GetKey(glfw.KeyUp) == glfw.Press {
+			g += 10 * frameLength
+		}
+
+		if window.GetKey(glfw.KeyDown) == glfw.Press {
+			g -= 10 * frameLength
+		}
+
+		mouseX, mouseY := window.GetCursorPos()
+		x := float32((mouseX - windowWidth/2) * 0.16)
+		y := float32((windowHeight/2 - mouseY) * 0.16)
+
 		/* --------------------------- */
 
 		gl.UseProgram(particleProg)
+
+		gl.BindBuffer(gl.UNIFORM_BUFFER, tBuffer)
+		timeBlock := []float32{frameLength, x, y, g}
+		gl.BufferData(gl.UNIFORM_BUFFER, len(timeBlock)*4, gl.Ptr(timeBlock), gl.DYNAMIC_COPY)
+		gl.BindBufferBase(gl.UNIFORM_BUFFER, 1, tBuffer)
+
 		gl.DispatchCompute(1024, 1, 1)
 		gl.MemoryBarrier(gl.VERTEX_ATTRIB_ARRAY_BARRIER_BIT)
 
-		gl.GetBufferSubData(gl.SHADER_STORAGE_BUFFER,0, numParticles*16, gl.Ptr(points))
-		fmt.Println(points[0])
+		//gl.GetBufferSubData(gl.SHADER_STORAGE_BUFFER,0, numParticles*16, gl.Ptr(points))
+		//fmt.Println(points[0])
 
 		gl.UseProgram(quadProg)
 		gl.ClearColor(0, 0, 0, 1)
@@ -180,10 +207,11 @@ func main() {
 		frames++
 		select {
 		case <-second:
-			window.SetTitle(fmt.Sprintf("%s | FPS: %d", windowTitlePrefix, frames))
+			window.SetTitle(fmt.Sprintf("%s | FPS: %d | g: %f", windowTitlePrefix, frames, g))
 			frames = 0
 		default:
 		}
+		frameLength = float32(time.Since(frameStart).Seconds())
 
 	}
 
