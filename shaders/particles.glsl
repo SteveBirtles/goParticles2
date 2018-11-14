@@ -1,6 +1,6 @@
 #version 430 core
 #define NUMPARTICLES 1000000
-#define ATTRACTORS 16
+#define ATTRACTORS 3
 
 uniform ParticleDataBlock {
     float t;

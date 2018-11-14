@@ -18,7 +18,7 @@ const (
 	windowWidth  = 1280
 	windowHeight = 720
 	numParticles = 1000000
-	attractors   = 16
+	attractors   = 3
 )
 
 var (
@@ -86,7 +86,7 @@ func main() {
 		panic(err)
 	}
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
-	glfw.SwapInterval(0)
+	//glfw.SwapInterval(0)
 
 	particleShader := LoadShader("shaders/particles.glsl", gl.COMPUTE_SHADER)
 	vertexShader := LoadShader("shaders/vert.glsl", gl.VERTEX_SHADER)
@@ -108,8 +108,8 @@ func main() {
 	var points, velocities []mgl32.Vec4
 
 	for i := 0; i < numParticles; i++ {
-		x := (rand.Float32()*2 - 1) * float32(100)
-		y := (rand.Float32()*2 - 1) * float32(75)
+		x := ((float32(i)/numParticles)*2 - 1) * float32(100)
+		y := float32(110)*float32(i % 1000)/1000 - 55
 		z := float32(0)
 		points = append(points, mgl32.Vec4{x, y, z, 1})
 	}
@@ -120,10 +120,7 @@ func main() {
 	gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, posSSBO)
 
 	for i := 0; i < numParticles; i++ {
-		x := float32(0) //(rand.Float32()*2 - 1) * float32(4)
-		y := float32(0) //(rand.Float32()*2 - 1) * float32(4)
-		z := float32(0)
-		velocities = append(velocities, mgl32.Vec4{x, y, z, 0})
+		velocities = append(velocities, mgl32.Vec4{float32(0), float32(0), float32(0), 0})
 	}
 
 	gl.GenBuffers(1, &velSSBO)
@@ -134,10 +131,10 @@ func main() {
 	attractorVectors := make([]float32, 0)
 
 	for i := 0; i < attractors; i++ {
-		attractorVectors = append(attractorVectors, (rand.Float32()*2-1)*float32(100))
+		attractorVectors = append(attractorVectors, (rand.Float32()*2-1)*float32(80))
 	}
 	for i := 0; i < attractors; i++ {
-		attractorVectors = append(attractorVectors, (rand.Float32()*2-1)*float32(75))
+		attractorVectors = append(attractorVectors, (rand.Float32()*2-1)*float32(50))
 	}
 	for i := 0; i < attractors; i++ {
 		attractorVectors = append(attractorVectors, -rand.Float32()*float32(20))
