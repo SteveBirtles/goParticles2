@@ -1,7 +1,7 @@
 #version 430 core
 #define NUMPARTICLES 1000000
 
-uniform TimeBlock {
+uniform ParticleDataBlock {
     float t;
     float centreX;
     float centreY;
@@ -39,7 +39,7 @@ void main() {
       velocities[index] = vec4(vp, 0.0);
   } else {
       vec3 vp = vPos * (1 - t);
-      vec3 pp = pPos + vPos * t;
+      vec3 pp = pPos + vp * t;
       positions[index] = vec4(pp, 1.0);
       velocities[index] = vec4(vp, 0.0);
   }

@@ -98,10 +98,10 @@ func main() {
 	gl.LinkProgram(particleProg)
 	gl.UseProgram(particleProg)
 
-	var tBuffer uint32
-	tIndex := gl.GetUniformBlockIndex(particleProg, gl.Str("TimeBlock"+"\x00"))
-	gl.UniformBlockBinding(particleProg, tIndex, 1)
-	gl.GenBuffers(1, &tBuffer)
+	var particleDataBuffer uint32
+	particleDataIndex := gl.GetUniformBlockIndex(particleProg, gl.Str("ParticleDataBlock"+"\x00"))
+	gl.UniformBlockBinding(particleProg, particleDataIndex, 1)
+	gl.GenBuffers(1, &particleDataBuffer)
 
 	posSSBO := uint32(1)
 	velSSBO := uint32(2)
@@ -181,10 +181,10 @@ func main() {
 
 		gl.UseProgram(particleProg)
 
-		gl.BindBuffer(gl.UNIFORM_BUFFER, tBuffer)
-		timeBlock := []float32{frameLength, x, y, g}
-		gl.BufferData(gl.UNIFORM_BUFFER, len(timeBlock)*4, gl.Ptr(timeBlock), gl.DYNAMIC_COPY)
-		gl.BindBufferBase(gl.UNIFORM_BUFFER, 1, tBuffer)
+		gl.BindBuffer(gl.UNIFORM_BUFFER, particleDataBuffer)
+		particleDataBlock := []float32{frameLength, x, y, g}
+		gl.BufferData(gl.UNIFORM_BUFFER, len(particleDataBlock)*4, gl.Ptr(particleDataBlock), gl.DYNAMIC_COPY)
+		gl.BindBufferBase(gl.UNIFORM_BUFFER, 1, particleDataBuffer)
 
 		gl.DispatchCompute(1024, 1, 1)
 		gl.MemoryBarrier(gl.VERTEX_ATTRIB_ARRAY_BARRIER_BIT)
